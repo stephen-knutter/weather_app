@@ -24,7 +24,8 @@ $(function(){
     stationDescrip: $("#stationDescrip"),
     rainDescrip: $("#rainDescrip"),
     humidDescrip: $("#humidDescrip"),
-    elevDescrip: $("#elevDescrip")
+    elevDescrip: $("#elevDescrip"),
+    userLoc: null
   }
 
   weather.form.on("submit", function(event){
@@ -41,14 +42,12 @@ $(function(){
         success: function(data){
           if(data){
             //CONTENT OBJECTS
-            console.log(data);
             var W = data.current_observation;
             var displayLoc = W.display_location;
             var observLoc = W.observation_location;
             //HEADER INFO
             var full = displayLoc.full;
             var zip = displayLoc.zip;
-            console.log(zip);
             var lastUpdated = W.observation_time;
             //BODY INFO
             var time = W.local_time_rfc822;
@@ -94,6 +93,7 @@ $(function(){
             weather.rainDescrip.html(precip);
             weather.humidDescrip.html(humidity);
             weather.elevDescrip.html(elevation);
+            mapping.createMap(lat,lng);
           } else {
             alert('Could not find data for ' + city + ' ,' + state);
           }
@@ -101,4 +101,15 @@ $(function(){
       })
     }
   })
+
+  weather.userLoc = mapping.getLocation();
+  if(weather.userLoc){
+    var lat = weather.userLoc.lat;
+    var lng = weather.userLoc.lng;
+  } else {
+    //DEFAULT TO COLORADO
+    var lat = '37.778488';
+    var lng = '-122.408005';
+  }
+  mapping.createMap(lat,lng);
 })
