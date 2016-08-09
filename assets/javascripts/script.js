@@ -4,6 +4,7 @@ $(function(){
     curState: 'CA',
     options: $(".side-btn"),
     tables: $(".table"),
+    toggle: $("#toggle-btn"),
     state: $("#state"),
     city: $("#city"),
     submit: $("#submit"),
@@ -89,11 +90,18 @@ $(function(){
             $this.getForecast();
             $this.camImg.html("");
             $this.getCams();
+            $this.checkMobileToggle();
           } else {
             alert('Could not find data for ' + city + ' ,' + state);
           }
         }
       })
+    },
+    checkMobileToggle: function(){
+      var docWidth = resize.docWidth;
+      if(docWidth <= 786){
+        this.toggle.click();
+      }
     },
     appendItems: function(items){
       //HEAD
@@ -141,8 +149,6 @@ $(function(){
               $this.webcams[i] = webcams[i];
               $this.addCarouselItem($this.webcams[i],i);
             }
-            $this.camImg.find("div.carousel-inner")
-            //$this.camImg.html('<img class="weather-img" src="'+$this.webcams[0].CURRENTIMAGEURL+'" alt="'+$this.webcams[0].city+' Webcams">')
           }
         }
       })
@@ -158,6 +164,7 @@ $(function(){
       carousel.append('<div class="'+className+'"><img src="'+item.CURRENTIMAGEURL+'" alt="'+item.city+' Webcams"></div>')
     },
     addCarousel: function(){
+      /*
       var carousel ='<div id="carousel-container" class="container col-lg-12 col-md-12 col-sm-12">'+
                       '<div id="myCarousel" class="carousel slide" data-ride="carousel">'+
                         '<ol class="carousel-indicators">'+
@@ -177,7 +184,8 @@ $(function(){
                           '<span class="sr-only">Next</span>'+
                         '</a>'+
                       '</div>'+
-                    '</div>'
+                    '</div>'*/
+      var carousel = templates.addCarousel;
       this.camImg.html(carousel);
     },
     getForecast: function(){
@@ -187,7 +195,6 @@ $(function(){
         type: 'GET',
         url: url,
         success: function(data){
-          console.log(data);
           var forecast = data.forecast.simpleforecast.forecastday;
           var txt = data.forecast.txt_forecast.forecastday;
           for(var i=0; i<3; i++){
@@ -212,17 +219,7 @@ $(function(){
         var windDir = current.avewind.dir;
         var windMph = current.avewind.mph;
         var text = current.txt.fcttext;
-        this.forecastInfo.append(
-          '<td>'+'<div class="forecast-head">'+
-              '<h6>'+month+' '+day+', '+year+'</h6>'+
-              '<span  class="temp-high" id="high-'+i+'">'+high+' H</span> | <span class="temp-low" id="low-'+i+'">'+low+' L</span>'+
-            '</div>'+
-            '<div class="forecast-body">'+
-              '<img src="'+icon+'" alt="'+tz+'">'+
-            '</div>'+
-            '<div class="forecast-foot">Winds from '+windDir+' at '+windMph+ ' '+text+'</div>'+
-          '</td>'
-        )
+        this.forecastInfo.append(templates.addForecast(i,month,day,year,high,low,icon,tz,windDir,windMph,text));
       }
     },
     buttonToggle: function(oThis){

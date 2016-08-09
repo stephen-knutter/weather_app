@@ -18,6 +18,10 @@
   color: #a5a4a4;
 }
 
+.update{
+  display: inline-block;
+}
+
 .source{
     top: 0px;
     left: 0px;
