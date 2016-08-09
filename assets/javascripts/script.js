@@ -79,7 +79,13 @@ $(function(){
         type: 'GET',
         url: url,
         success: function(data){
+          console.log(data);
           if(data){
+            var response = data.response;
+            var error = response.error;
+            if(error){
+              alert('Could not find data for ' + city + ' ,' + state);
+            }
             $this.curState = state;
             $this.curCity = city;
             $this.curWeather = data.current_observation;
@@ -243,6 +249,6 @@ $(function(){
     weather.buttonToggle($(this));
     weather.displayTables($(this));
   });
-  
+
   weather.getLoc();
 });
