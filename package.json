@@ -1,0 +1,32 @@
+{
+  "name": "weather_underground",
+  "version": "1.0.0",
+  "description": "Weather API application",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stephen-knutter/weather_app.git"
+  },
+  "keywords": [
+    "weatherunderground",
+    "bootstrap",
+    "css3",
+    "html5",
+    "jQuery",
+    "mapbox"
+  ],
+  "author": "Stephen Knutter",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stephen-knutter/weather_app/issues"
+  },
+  "homepage": "https://github.com/stephen-knutter/weather_app#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-jshint": "^2.0.1",
+    "gulp-nodemon": "^2.1.0"
+  }
+}

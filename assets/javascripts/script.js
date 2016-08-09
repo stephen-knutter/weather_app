@@ -1,5 +1,9 @@
 $(function(){
   var weather = {
+    curCity: 'San_Francisco',
+    curState: 'CA',
+    options: $(".side-btn"),
+    tables: $(".table"),
     state: $("#state"),
     city: $("#city"),
     submit: $("#submit"),
@@ -16,6 +20,11 @@ $(function(){
     lat: $("#lat"),
     lng: $("#lng"),
     exlink: $("#external-link"),
+    forecastTable: $("#forecast"),
+    forecastInfo: $("#forecast-info"),
+    camTable: $("#cams"),
+    camImg: $("#cam-img"),
+    infoTable: $("#info"),
     fullDescrip: $("#fullDescrip"),
     tempDescrip: $("#tempDescrip"),
     windDescrip: $("#windDescrip"),
@@ -25,91 +34,239 @@ $(function(){
     rainDescrip: $("#rainDescrip"),
     humidDescrip: $("#humidDescrip"),
     elevDescrip: $("#elevDescrip"),
-    userLoc: null
-  }
-
-  weather.form.on("submit", function(event){
-    event.preventDefault();
-    var state = weather.state.val();
-    state = state.toUpperCase().replace(/^[A-Z]$/gi, "");
-    var city = weather.city.val();
-    city = city.replace(/\s+/g, "_").replace(/^[a-zA-Z]$/gi, "_");
-    if(state && city){
+    curWeather: {},
+    userLoc: {},
+    geoData: {},
+    webcams: {},
+    forecasts: {},
+    reverseGeocode: function(data){
+      $this = this;
+      var url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/'+data.lng+','+data.lat+'.json?access_token='+mapping.mapkey;
+      $.ajax({
+        type: 'GET',
+        url: url,
+        success: function(data){
+          $this.geoData = data.features;
+          var city = $this.geoData[0].context[1].text;
+          city = $this.formatCity(city);
+          var state = $this.geoData[0].context[3].short_code;
+          state = $this.formatState(state);
+          if(state && city){
+            $this.getData(state,city);
+          } else {
+            $this.getData($this.curState, $this.curCity);
+          }
+        }
+      })
+    },
+    getLoc: function(){
+      mapping.getLocation(this, this._mapcallback);
+    },
+    _mapcallback: function(oThis,data){
+      var status = data.status;
+      if(status === 200){
+        oThis.userLoc = data;
+        oThis.reverseGeocode(data);
+      } else {
+        oThis.getData(oThis.curState, oThis.curCity);
+      }
+    },
+    getData: function(state,city){
+      var $this = this;
       var url = 'http://api.wunderground.com/api/748045a663ebb010/conditions/q/'+state+'/'+city+'.json';
       $.ajax({
         type: 'GET',
         url: url,
         success: function(data){
           if(data){
-            //CONTENT OBJECTS
-            var W = data.current_observation;
-            var displayLoc = W.display_location;
-            var observLoc = W.observation_location;
-            //HEADER INFO
-            var full = displayLoc.full;
-            var zip = displayLoc.zip;
-            var lastUpdated = W.observation_time;
-            //BODY INFO
-            var time = W.local_time_rfc822;
-            var city = displayLoc.city;
-            var state = displayLoc.state;
-            var alt = city+' , '+state+' Weather';
-            var icon = W.icon_url;
-            var description = W.weather;
-            var temp = W.temperature_string;
-            var feels = W.feelslike_string;
-            var windDir = W.wind_dir;
-            var windMph = W.wind_mph;
-            var wind = "From the "+windDir+" "+windMph+" MPH";
-            var lat = observLoc.latitude;
-            var lng = observLoc.longitude;
-            var exlink = W.forecast_url;
-            var fullOther = observLoc.full;
-            var duepoint = W.dewpoint_string;
-            var windchill = W.windchill_string;
-            var stationid = W.station_id;
-            var precip = W.precip_today_string;
-            var humidity = W.relative_humidity;
-            var elevation = observLoc.elevation;
-            //APPEND ITEMS
-            //HEAD
-            weather.headLoc.html(full);
-            weather.headZip.html('('+zip+')');
-            weather.updated.html(lastUpdated);
-            //BODY
-            weather.time.html(time);
-            weather.icon.attr({'src': icon, 'alt': alt});
-            weather.description.html(description);
-            weather.temp.html(temp);
-            weather.feels.html(feels);
-            weather.wind.html(wind);
-            weather.lat.html(lat);
-            weather.lng.html(lng);
-            weather.exlink.attr('href', exlink).html(full);
-            weather.fullDescrip.html(fullOther);
-            weather.dueDescrip.html(duepoint);
-            weather.windDescrip.html(windchill);
-            weather.stationDescrip.html(stationid);
-            weather.rainDescrip.html(precip);
-            weather.humidDescrip.html(humidity);
-            weather.elevDescrip.html(elevation);
-            mapping.createMap(lat,lng);
+            $this.curState = state;
+            $this.curCity = city;
+            $this.curWeather = data.current_observation;
+            if($this.curWeather){
+              $this.appendItems($this.curWeather);
+            }
+            $this.forecastInfo.html("");
+            $this.getForecast();
+            $this.camImg.html("");
+            $this.getCams();
           } else {
             alert('Could not find data for ' + city + ' ,' + state);
           }
         }
       })
+    },
+    appendItems: function(items){
+      //HEAD
+      this.headLoc.html(items.display_location.full);
+      this.headZip.html('('+items.display_location.zip+')');
+      this.updated.html(items.observation_time);
+      //BODY
+      this.time.html(items.local_time_rfc822);
+      this.icon.attr({'src': items.icon_url, 'alt': items.display_location.city+' , '+items.display_location.state+' Weather'});
+      this.description.html(items.weather);
+      this.temp.html(items.temperature_string);
+      this.feels.html(items.feelslike_string);
+      this.wind.html("From the "+items.wind_dir+" "+items.wind_mph+" MPH");
+      this.lat.html(items.observation_location.latitude);
+      this.lng.html(items.observation_location.longitude);
+      this.exlink.attr('href', items.forecast_url).html(items.display_location.full);
+      this.fullDescrip.html(items.observation_location.full);
+      this.dueDescrip.html(items.dewpoint_string);
+      this.windDescrip.html(items.windchill_string);
+      this.stationDescrip.html(items.station_id);
+      this.rainDescrip.html(items.precip_today_string);
+      this.humidDescrip.html(items.relative_humidity);
+      this.elevDescrip.html(items.observation_location.elevation);
+      mapping.createMap(items.observation_location.latitude,items.observation_location.longitude);
+    },
+    formatState: function(state){
+      state = state.toUpperCase().replace(/US\-/g, "").replace(/^[A-Z]$/gi, "");
+      return state;
+    },
+    formatCity: function(city){
+      city = city.replace(/\s+/g, "_").replace(/^[a-zA-Z]$/gi, "_");
+      return city;
+    },
+    getCams: function(){
+      $this = this;
+      var url = 'http://api.wunderground.com/api/748045a663ebb010/webcams/q/'+this.curState+'/'+this.curCity+'.json';
+      $.ajax({
+        type: 'GET',
+        url: url,
+        success: function(data){
+          if(data){
+            $this.addCarousel();
+            var webcams = data.webcams;
+            for(var i=0; i<10; i++){
+              $this.webcams[i] = webcams[i];
+              $this.addCarouselItem($this.webcams[i],i);
+            }
+            $this.camImg.find("div.carousel-inner")
+            //$this.camImg.html('<img class="weather-img" src="'+$this.webcams[0].CURRENTIMAGEURL+'" alt="'+$this.webcams[0].city+' Webcams">')
+          }
+        }
+      })
+    },
+    addCarouselItem: function(item,i){
+      var carousel = $this.camImg.find("div.carousel-inner");
+      var className;
+      if(i===0){
+        className = 'item active';
+      } else {
+        className = 'item';
+      }
+      carousel.append('<div class="'+className+'"><img src="'+item.CURRENTIMAGEURL+'" alt="'+item.city+' Webcams"></div>')
+    },
+    addCarousel: function(){
+      var carousel ='<div id="carousel-container" class="container col-lg-12 col-md-12 col-sm-12">'+
+                      '<div id="myCarousel" class="carousel slide" data-ride="carousel">'+
+                        '<ol class="carousel-indicators">'+
+                          '<li data-target="#myCarousel" data-slide-to="0" class="active"></li>'+
+                          '<li data-target="#myCarousel" data-slide-to="1"></li>'+
+                          '<li data-target="#myCarousel" data-slide-to="2"></li>'+
+                          '<li data-target="#myCarousel" data-slide-to="3"></li>'+
+                        '</ol>'+
+                        '<div class="carousel-inner" role="listbox">'+
+                        '</div>'+
+                        '<a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">'+
+                          '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>'+
+                          '<span class="sr-only">Previous</span>'+
+                        '</a>'+
+                        '<a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">'+
+                          '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>'+
+                          '<span class="sr-only">Next</span>'+
+                        '</a>'+
+                      '</div>'+
+                    '</div>'
+      this.camImg.html(carousel);
+    },
+    getForecast: function(){
+      $this = this;
+      var url = 'http://api.wunderground.com/api/748045a663ebb010/forecast10day/q/'+this.curState+'/'+this.curCity+'.json';
+      $.ajax({
+        type: 'GET',
+        url: url,
+        success: function(data){
+          console.log(data);
+          var forecast = data.forecast.simpleforecast.forecastday;
+          var txt = data.forecast.txt_forecast.forecastday;
+          for(var i=0; i<3; i++){
+            $this.forecasts[i] = forecast[i];
+            $this.forecasts[i].txt = txt[i];
+          }
+          $this.addForecast($this.forecasts);
+        }
+      })
+    },
+    addForecast(forecasts){
+      for(i in forecasts){
+        var current = forecasts[i];
+        var conditions = current.conditions;
+        var tz = current.date.tz_long;
+        var month = current.date.monthname;
+        var day = current.date.day
+        var year = current.date.year;
+        var high = current.high.fahrenheit;
+        var low = current.low.fahrenheit;
+        var icon = current.icon_url;
+        var windDir = current.avewind.dir;
+        var windMph = current.avewind.mph;
+        var text = current.txt.fcttext;
+        this.forecastInfo.append(
+          '<td>'+'<div class="forecast-head">'+
+              '<h6>'+month+' '+day+', '+year+'</h6>'+
+              '<span  class="temp-high" id="high-'+i+'">'+high+' H</span> | <span class="temp-low" id="low-'+i+'">'+low+' L</span>'+
+            '</div>'+
+            '<div class="forecast-body">'+
+              '<img src="'+icon+'" alt="'+tz+'">'+
+            '</div>'+
+            '<div class="forecast-foot">Winds from '+windDir+' at '+windMph+ ' '+text+'</div>'+
+          '</td>'
+        )
+      }
+    },
+    buttonToggle: function(oThis){
+      this.options.removeClass('bg-primary');
+      oThis.addClass('bg-primary');
+    },
+    clearTables: function(){
+      this.camImg.html("");
+      this.forecastInfo.html("");
+    },
+    displayTables: function(oThis){
+      var link = oThis.find('a');
+      var request = link.data('req');
+      this.tables.css("display","none");
+      switch(request){
+        case 'forecast':
+          this.forecastTable.css("display","table");
+        break;
+        case 'cams':
+          this.camTable.css("display","table");
+        break;
+        case 'info':
+          this.infoTable.css("display","table");
+        break;
+      }
     }
-  })
+  };
 
-  weather.userLoc = mapping.getLocation();
-  if(weather.userLoc){
-    var lat = weather.userLoc.lat;
-    var lng = weather.userLoc.lng;
-  } else {
-    //DEFAULT TO COLORADO
-    var lat = '37.778488';
-    var lng = '-122.408005';
-  }
-  mapping.createMap(lat,lng);
-})
+  weather.form.on("submit", function(event){
+    event.preventDefault();
+    var state = weather.state.val();
+    state = weather.formatState(state);
+    var city = weather.city.val();
+    city = weather.formatCity(city);
+    if(state && city){
+      weather.clearTables();
+      weather.getData(state,city);
+    }
+  });
+
+  weather.options.on("click", function(){
+    weather.buttonToggle($(this));
+    weather.displayTables($(this));
+  });
+
+  weather.getLoc();
+});

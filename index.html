@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A bootstrap weather application">
     <meta name="keywords" content="bootstrap, jQuery, html5, css3, mapbox, weatherunderground">
+    <link rel="icon" href="./assets/images/Weather.png" />
     <title>Stephen's Weather Forcast</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
@@ -14,40 +15,48 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
     <script type="text/javascript" src="./assets/javascripts/map.js"></script>
+    <script type="text/javascript" src="./assets/javascripts/resize.js"></script>
     <script type="text/javascript" src="./assets/javascripts/script.js"></script>
   </head>
   <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-header">
         <a class="navbar-brand" href="#"><i class="fa fa-bolt" aria-hidden="true"></i> Weather API</a>
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
       </div>
-      <form class="navbar-form pull-right" id="search_form">
-        <input class="form-control" id="city" type="text" name="city" placeholder="City..." />
-        <input class="form-control" id="state" type="text" name="state" placeholder="State..." maxlength=2 />
-        <button type="submit" id="submit" class="btn btn-primary">Get Weather</button>
-      </form>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <form class="navbar-form pull-right" id="search_form">
+          <input class="form-control" id="city" type="text" name="city" placeholder="City..." />
+          <input class="form-control" id="state" type="text" name="state" placeholder="State..." maxlength=2 />
+          <button type="submit" id="submit" class="btn btn-primary">Get Weather</button>
+        </form>
+      </div>
     </nav>
       <div class="container page-header">
         <header>
           <h1 class="pull-left"><span id="head-loc">San Francisco, CA</span><span id="head-zip">(94101)</span></h1><span class="update" id="last-updated">Last Updated on August 6, 8:14 PM PDT</span>
         </header>
       </div>
-
       <main class="container container-fluid">
         <div class="col-lg-3 col-md-12 col-sm-12">
           <div class="well options">
             <span class="upper-head">OPTIONS</span>
-            <p class="bg-primary side-btn"><a href="#">Weather</a></p>
-            <p class="side-btn"><a href="#">Radar</a></p>
+            <p class="bg-primary side-btn"><a data-req="info" href="#">Weather</a></p>
+            <p class="side-btn"><a data-req="forecast" href="#">Forecast</a></p>
+            <p class="side-btn"><a data-req="cams" href="#">Webcams</a></p>
           </div>
           <div id="map-wrap">
             <div id="map">
             </div>
           </div>
         </div>
-        <div class="">
+        <div class="wrapper">
           <div class="col-lg-9 col-md-12 col-sm-12">
-            <div class="well">
+            <div class="well clearfix" id="fixed-body">
               <div class="header">
                 <span class="time"> <i class="fa fa-clock-o" aria-hidden="true"></i> <span id="time">Sat, 06 Aug 2016 20:14:27 -0700</span></span><h1 class="h1-no-padding">Current Conditions</h1>
               </div>
@@ -75,9 +84,106 @@
                   </p>
                 </div>
                 <div class="col-lg-8 table-div content-div">
-                  <table class="table table-content">
+                  <!-- FORECAST TABLE -->
+                  <table class="table table-conent" id="forecast">
                     <thead>
+                      <tr>
+                        <td colspan=3>
+                          <h3 class="forecast-head">3-DAY FORECAST</h3>
+                        </td>
+                      </tr>
                     </thead>
+                    <tbody>
+                      <tr id="forecast-info">
+                        <td>
+                          <div class="forecast-head">
+                            <h6>August 8, 2016</h6>
+                            <span id="high-one" class="temp-high">75 H</span> | <span id="low-one" class="temp-low">35 L</span>
+                          </div>
+                          <div class="forecast-body">
+                            <img src="http://icons.wxug.com/i/c/k/clear.gif" alt="Forecast" />
+                          </div>
+                          <div class="forecast-foot">
+                            A few passing clouds, otherwise generally sunny. High 61F. Winds SW at 10 to 20 mph.
+                          </div>
+                        </td>
+                        <td>
+                          <div class="forecast-head">
+                            <h6>August 8, 2016</h6>
+                            <span id="high-two" class="temp-high">75 H</span> | <span id="low-two" class="temp-low">35 L</span>
+                          </div>
+                          <div class="forecast-body">
+                            <img src="http://icons.wxug.com/i/c/k/clear.gif" alt="Forecast" />
+                          </div>
+                          <div class="forecast-foot">
+                            A few passing clouds, otherwise generally sunny. High 61F. Winds SW at 10 to 20 mph.
+                          </div>
+                        </td>
+                        <td>
+                          <div class="forecast-head">
+                            <h6>August 8, 2016</h6>
+                            <span id="high-three" class="temp-high">75 H</span> | <span id="low-three" class="temp-low">35 L</span>
+                          </div>
+                          <div class="forecast-body">
+                            <img src="http://icons.wxug.com/i/c/k/clear.gif" alt="Forecast" />
+                          </div>
+                          <div class="forecast-foot">
+                            A few passing clouds, otherwise generally sunny. High 61F. Winds SW at 10 to 20 mph.
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <!-- WEBCAM TABLE -->
+                  <table class="table table-content" id="cams">
+                    <tbody>
+                      <tr>
+                        <td id="cam-img">
+                          <div id="carousel-container" class="container col-lg-12 col-md-12 col-sm-12">
+                            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                              <!-- Indicators -->
+                              <ol class="carousel-indicators">
+                                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                                <li data-target="#myCarousel" data-slide-to="1"></li>
+                                <li data-target="#myCarousel" data-slide-to="2"></li>
+                                <li data-target="#myCarousel" data-slide-to="3"></li>
+                              </ol>
+                              <!-- Wrapper for slides -->
+                              <div class="carousel-inner" role="listbox">
+                                <div class="item active">
+                                  <img src="http://icons.wunderground.com/webcamramdisk/c/a/cadot1/869/current.jpg?t=1470685260" alt="" />
+                                </div>
+
+                                <div class="item">
+                                  <img src="http://icons.wunderground.com/webcamramdisk/a/m/ampledata/1/current.jpg?t=1470685260" alt="" />
+                                </div>
+
+                                <div class="item">
+                                  <img src="http://icons.wunderground.com/webcamramdisk/i/n/Inafog/3/current.jpg?t=1470706560" alt="" />
+                                </div>
+
+                                <div class="item">
+                                  <img src="http://icons.wunderground.com/webcamramdisk/n/e/NeuroDoc/1/current.jpg?t=1470685260" alt="" />
+                                </div>
+                              </div>
+                              <!-- Left and right controls -->
+                              <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                              </a>
+                              <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                              </a>
+                            </div>
+                          </div>
+                          <!--<img class="weather-img" src="http://icons.wunderground.com/webcamramdisk/i/n/Inafog/3/current.jpg?t=1470685260" />-->
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <!-- INFO TABLE -->
+                  <table class="table table-content" id="info">
                     <tbody>
                       <tr class="temp-tr">
                         <td>Full</td>
@@ -87,10 +193,12 @@
                         <td>Temperature</td>
                         <td id="tempDescrip">52 F (11 C)</td>
                       </tr>
+                      <!--
                       <tr class="temp-tr">
                         <td>Wind</td>
                         <td id="windDescrip">From the SW 11.0 MPH</td>
                       </tr>
+                    -->
                       <tr class="temp-tr">
                         <td>Duepoint</td>
                         <td id="dueDescrip">52 F (11 C)</td>
@@ -99,10 +207,12 @@
                         <td>Windchill</td>
                         <td id="chillDescrip">N/A</td>
                       </tr>
+                      <!--
                       <tr class="temp-tr">
                         <td>Station ID</td>
                         <td id="stationDescrip">KCASANFR131</td>
                       </tr>
+                      -->
                       <tr class="temp-tr">
                         <td>Precip Today</td>
                         <td id="rainDescrip">0.00 in (0 mm)</td>

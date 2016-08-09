@@ -1,5 +1,6 @@
 /*MAPBOX WRAPPER*/
 (function(namespace){
+  namespace.mapkey = 'pk.eyJ1Ijoic21rcXA4IiwiYSI6ImNpcmtuZmh0YjAwMzZmZm04ZjF4ODU4NjQifQ.39jUUHq0jF4BzDD3gfxDOw';
   namespace.createMap = function(lat,lng,map){
     var mapWrap = document.getElementById('map-wrap');
     var childNodes = mapWrap.childNodes.length;
@@ -11,10 +12,10 @@
     var mapAppend = document.createElement('div');
     mapAppend.id = "map";
     mapWrap.appendChild(mapAppend);
-    L.mapbox.accessToken = 'pk.eyJ1Ijoic21rcXA4IiwiYSI6ImNpcmtuZmh0YjAwMzZmZm04ZjF4ODU4NjQifQ.39jUUHq0jF4BzDD3gfxDOw';
+    L.mapbox.accessToken = namespace.mapkey;
     var newMap = L.mapbox.map('map', 'mapbox.streets').setView([lat,lng],9);
   },
-  namespace.getLocation = function(){
+  namespace.getLocation = function(weather,callback){
     var lat;
     var lng;
     var coords = {};
@@ -25,12 +26,18 @@
         lng = position.coords.longitude;
         coords.lng = lng;
         if(coords){
-          return coords;
+          coords.status = 200;
         } else {
-          return false;
+          coords.status = 500;
         }
+      }, function(err){
+        //NAVIGATOR GEOLOCATION ERROR
+        coords.status = 500;
       });
+      callback(weather,coords);
     }
     return false;
+  },
+  namespace.geocodeLatLng = function(lat,lng){
   }
 })(window.mapping || (window.mapping = {}));
