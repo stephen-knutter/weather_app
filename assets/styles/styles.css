@@ -210,13 +210,14 @@ element.style {
     margin-right: auto;
     margin-left: auto;
 }
-@media (max-width: 786px){
+
+@media (max-width: 768px){
   .navbar-form{
     width: 100%;
-    border: 0;
     margin: 0;
     padding: 10px 0;
     border: 0;
+    box-shadow: none;
   }
   .navbar-form input{
     margin: 5px 0;

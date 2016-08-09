@@ -74,7 +74,7 @@ $(function(){
     },
     getData: function(state,city){
       var $this = this;
-      var url = 'http://api.wunderground.com/api/748045a663ebb010/conditions/q/'+state+'/'+city+'.json';
+      var url = 'https://api.wunderground.com/api/748045a663ebb010/conditions/q/'+state+'/'+city+'.json';
       $.ajax({
         type: 'GET',
         url: url,
@@ -137,7 +137,7 @@ $(function(){
     },
     getCams: function(){
       $this = this;
-      var url = 'http://api.wunderground.com/api/748045a663ebb010/webcams/q/'+this.curState+'/'+this.curCity+'.json';
+      var url = 'https://api.wunderground.com/api/748045a663ebb010/webcams/q/'+this.curState+'/'+this.curCity+'.json';
       $.ajax({
         type: 'GET',
         url: url,
@@ -164,33 +164,12 @@ $(function(){
       carousel.append('<div class="'+className+'"><img src="'+item.CURRENTIMAGEURL+'" alt="'+item.city+' Webcams"></div>')
     },
     addCarousel: function(){
-      /*
-      var carousel ='<div id="carousel-container" class="container col-lg-12 col-md-12 col-sm-12">'+
-                      '<div id="myCarousel" class="carousel slide" data-ride="carousel">'+
-                        '<ol class="carousel-indicators">'+
-                          '<li data-target="#myCarousel" data-slide-to="0" class="active"></li>'+
-                          '<li data-target="#myCarousel" data-slide-to="1"></li>'+
-                          '<li data-target="#myCarousel" data-slide-to="2"></li>'+
-                          '<li data-target="#myCarousel" data-slide-to="3"></li>'+
-                        '</ol>'+
-                        '<div class="carousel-inner" role="listbox">'+
-                        '</div>'+
-                        '<a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">'+
-                          '<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>'+
-                          '<span class="sr-only">Previous</span>'+
-                        '</a>'+
-                        '<a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">'+
-                          '<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>'+
-                          '<span class="sr-only">Next</span>'+
-                        '</a>'+
-                      '</div>'+
-                    '</div>'*/
       var carousel = templates.addCarousel;
       this.camImg.html(carousel);
     },
     getForecast: function(){
       $this = this;
-      var url = 'http://api.wunderground.com/api/748045a663ebb010/forecast10day/q/'+this.curState+'/'+this.curCity+'.json';
+      var url = 'https://api.wunderground.com/api/748045a663ebb010/forecast10day/q/'+this.curState+'/'+this.curCity+'.json';
       $.ajax({
         type: 'GET',
         url: url,
@@ -264,6 +243,6 @@ $(function(){
     weather.buttonToggle($(this));
     weather.displayTables($(this));
   });
-
+  
   weather.getLoc();
 });
