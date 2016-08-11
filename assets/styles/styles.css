@@ -188,6 +188,7 @@ p.lng{
 .carousel{
   width: 100%;
 }
+
 .carousel-inner > .item > img,
 .carousel-inner > .item > a > img {
   width: 100%;
@@ -195,20 +196,18 @@ p.lng{
   height: 270px;
 }
 
-
-
-:hov
-
-
-.cls
-
-element.style {
-}
 .container-fluid {
     padding-right: 15px;
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
+}
+
+.spinner-wrap{
+  position: relative;
+  width: 70px;
+  margin: 0 auto;
+  display: none;
 }
 
 @media (max-width: 768px){
@@ -225,5 +224,4 @@ element.style {
   .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form{
     border: 0;
   }
-
 }

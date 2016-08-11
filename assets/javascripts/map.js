@@ -30,10 +30,13 @@
         } else {
           coords.status = 500;
         }
+        callback(weather,coords);
       }, function(err){
         //NAVIGATOR GEOLOCATION ERROR
         coords.status = 500;
+        callback(weather,coords);
       });
+    } else {
       callback(weather,coords);
     }
     return false;

@@ -7,6 +7,7 @@ $(function(){
     toggle: $("#toggle-btn"),
     state: $("#state"),
     city: $("#city"),
+    spinner: $("#spinner"),
     submit: $("#submit"),
     form: $("#search_form"),
     headLoc: $("#head-loc"),
@@ -61,9 +62,12 @@ $(function(){
       })
     },
     getLoc: function(){
+      this.hideTables();
+      this.showSpinner();
       mapping.getLocation(this, this._mapcallback);
     },
     _mapcallback: function(oThis,data){
+      oThis.hideSpinner();
       var status = data.status;
       if(status === 200){
         oThis.userLoc = data;
@@ -79,7 +83,6 @@ $(function(){
         type: 'GET',
         url: url,
         success: function(data){
-          console.log(data);
           if(data){
             var response = data.response;
             var error = response.error;
@@ -97,6 +100,7 @@ $(function(){
             $this.camImg.html("");
             $this.getCams();
             $this.checkMobileToggle();
+            $this.showInfo();
           } else {
             alert('Could not find data for ' + city + ' ,' + state);
           }
@@ -215,19 +219,37 @@ $(function(){
       this.camImg.html("");
       this.forecastInfo.html("");
     },
+    hideTables: function(){
+      this.tables.css("display", "none");
+    },
+    showSpinner: function(){
+      this.spinner.css("display", "block");
+    },
+    hideSpinner: function(){
+      this.spinner.css("display", "none");
+    },
+    showForecast: function(){
+      this.forecastTable.css("display", "table");
+    },
+    showCams: function(){
+      this.camTable.css("display", "table");
+    },
+    showInfo: function(){
+      this.infoTable.css("display", "table");
+    },
     displayTables: function(oThis){
       var link = oThis.find('a');
       var request = link.data('req');
-      this.tables.css("display","none");
+      this.hideTables();
       switch(request){
         case 'forecast':
-          this.forecastTable.css("display","table");
+          this.showForecast();
         break;
         case 'cams':
-          this.camTable.css("display","table");
+          this.showCams();
         break;
         case 'info':
-          this.infoTable.css("display","table");
+          this.showInfo();
         break;
       }
     }

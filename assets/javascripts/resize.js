@@ -26,7 +26,6 @@ $(function(){
           this.td.css("height", "auto");
         }
       };
-
   })(window.resize || (window.resize = {}));
 
   $(window).on("load", function(){
