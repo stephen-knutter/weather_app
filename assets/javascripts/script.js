@@ -129,6 +129,7 @@ $(function(){
       this.lng.html(items.observation_location.longitude);
       this.exlink.attr('href', items.forecast_url).html(items.display_location.full);
       this.fullDescrip.html(items.observation_location.full);
+      this.tempDescrip.html(items.temperature_string);
       this.dueDescrip.html(items.dewpoint_string);
       this.windDescrip.html(items.windchill_string);
       this.stationDescrip.html(items.station_id);
@@ -194,7 +195,7 @@ $(function(){
         }
       })
     },
-    addForecast(forecasts){
+    addForecast: function(forecasts){
       for(i in forecasts){
         var current = forecasts[i];
         var conditions = current.conditions;
