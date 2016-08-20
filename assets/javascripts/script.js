@@ -10,32 +10,21 @@ $(function(){
     spinner: $("#spinner"),
     submit: $("#submit"),
     form: $("#search_form"),
-    headLoc: $("#head-loc"),
-    headZip: $("#head-zip"),
-    updated: $("#last-updated"),
-    time: $("#time"),
-    icon: $("#weather-icon"),
-    description: $("#weather-descrip"),
-    temp: $("#temp"),
-    feels: $("#feels-like"),
-    wind: $("#wind"),
-    lat: $("#lat"),
-    lng: $("#lng"),
-    exlink: $("#external-link"),
+    mainHeader: $("#header"),
+    timeHeader: $("#time-header"),
+    conditions: $("#side-conditions"),
     forecastTable: $("#forecast"),
     forecastInfo: $("#forecast-info"),
     camTable: $("#cams"),
     camImg: $("#cam-img"),
     infoTable: $("#info"),
-    fullDescrip: $("#fullDescrip"),
-    tempDescrip: $("#tempDescrip"),
-    windDescrip: $("#windDescrip"),
-    dueDescrip: $("#dueDescrip"),
-    chillDescrip: $("#chillDescrip"),
-    stationDescrip: $("#stationDescrip"),
-    rainDescrip: $("#rainDescrip"),
-    humidDescrip: $("#humidDescrip"),
-    elevDescrip: $("#elevDescrip"),
+    innerCarousel: $("#inner-carousel"),
+    templateConditions: $("#conditions"),
+    templateCurrentTime: $("#current-time"),
+    templateHeader: $("#template-header"),
+    templateInfo: $("#template-info"),
+    templateForecast: $("#template-forecast"),
+    templateWebcams: $("#template-webcams"),
     curWeather: {},
     userLoc: {},
     geoData: {},
@@ -100,7 +89,8 @@ $(function(){
             $this.camImg.html("");
             $this.getCams();
             $this.checkMobileToggle();
-            $this.showInfo();
+            var request = $(".bg-primary").find("a").data("req");
+            $this.showTable(request);
           } else {
             alert('Could not find data for ' + city + ' ,' + state);
           }
@@ -114,28 +104,52 @@ $(function(){
       }
     },
     appendItems: function(items){
-      //HEAD
-      this.headLoc.html(items.display_location.full);
-      this.headZip.html('('+items.display_location.zip+')');
-      this.updated.html(items.observation_time);
-      //BODY
-      this.time.html(items.local_time_rfc822);
-      this.icon.attr({'src': items.icon_url, 'alt': items.display_location.city+' , '+items.display_location.state+' Weather'});
-      this.description.html(items.weather);
-      this.temp.html(items.temperature_string);
-      this.feels.html(items.feelslike_string);
-      this.wind.html("From the "+items.wind_dir+" "+items.wind_mph+" MPH");
-      this.lat.html(items.observation_location.latitude);
-      this.lng.html(items.observation_location.longitude);
-      this.exlink.attr('href', items.forecast_url).html(items.display_location.full);
-      this.fullDescrip.html(items.observation_location.full);
-      this.tempDescrip.html(items.temperature_string);
-      this.dueDescrip.html(items.dewpoint_string);
-      this.windDescrip.html(items.windchill_string);
-      this.stationDescrip.html(items.station_id);
-      this.rainDescrip.html(items.precip_today_string);
-      this.humidDescrip.html(items.relative_humidity);
-      this.elevDescrip.html(items.observation_location.elevation);
+      var icon = items.icon_url,
+          alt = items.display_location.city+', '+items.display_location.state+' Weather',
+          description = items.weather,
+          temp = items.temperature_string,
+          feels = items.feelslike_string,
+          wind = "From the "+items.wind_dir+" "+items.wind_mph+" MPH",
+          lat = items.observation_location.latitude,
+          lng = items.observation_location.longitude,
+          exlink = items.forecast_url,
+          full_location = items.display_location.full,
+          local_time = items.local_time_rfc822,
+          city = items.display_location.city,
+          state = items.display_location.state,
+          zip = items.display_location.zip,
+          observation_time = items.observation_time,
+          full_description = items.observation_location.full,
+          duepoint = items.dewpoint_string,
+          windchill = items.windchill_string,
+          precipitation = items.precip_today_string,
+          humidity = items.relative_humidity,
+          elevation = items.observation_location.elevation;
+      //HEADER INFO
+      var headerInfo = [{location: full_location, zip: zip, observation_time: observation_time}];
+      var headerTemplate = this.templateHeader.html();
+      var Template = Handlebars.compile(headerTemplate);
+      this.mainHeader.html("");
+      this.mainHeader.append(Template(headerInfo));
+      //CURRENT TIME
+      var currentTime = [{time: local_time}];
+      var currentTimeTemplate = this.templateCurrentTime.html();
+      var Template = Handlebars.compile(currentTimeTemplate);
+      this.timeHeader.html("");
+      this.timeHeader.append(Template(currentTime));
+      //CONDTIONS INFO(LEFT SIDE)
+      var sideConditions = [{icon: icon, alt: alt, description: description, temp: temp, feels: feels, wind: wind, lat: lat, lng: lng, exlink: exlink, full_location: full_location}];
+      var conditionsTemplate = this.templateConditions.html();
+      var Template = Handlebars.compile(conditionsTemplate);
+      this.conditions.html("");
+      this.conditions.append(Template(sideConditions));
+      //TABLE INFO(RIGHT SIDE -  BODY)
+      var curInfoData = [{full_description: full_description, temp: temp, duepoint: duepoint, windchill: windchill, precipitation: precipitation, humidity: humidity, elevation: elevation}];
+      var infoTemplate = this.templateInfo.html();
+      var Template = Handlebars.compile(infoTemplate);
+      this.infoTable.html("");
+      this.infoTable.append(Template(curInfoData));
+
       mapping.createMap(items.observation_location.latitude,items.observation_location.longitude);
     },
     formatState: function(state){
@@ -154,29 +168,35 @@ $(function(){
         url: url,
         success: function(data){
           if(data){
-            $this.addCarousel();
             var webcams = data.webcams;
             for(var i=0; i<10; i++){
               $this.webcams[i] = webcams[i];
-              $this.addCarouselItem($this.webcams[i],i);
             }
+            $this.addCarousel($this.webcams);
           }
         }
       })
     },
-    addCarouselItem: function(item,i){
-      var carousel = $this.camImg.find("div.carousel-inner");
-      var className;
-      if(i===0){
-        className = 'item active';
-      } else {
-        className = 'item';
+    addCarousel: function(webcams){
+      var webcamItems = [];
+      for(var i in webcams){
+        var className = 'item';
+        if(i==0){
+          className += ' active';
+        }
+        var current = webcams[i];
+        var items = {
+          image: current.CURRENTIMAGEURL,
+          city: current.city,
+          class_name: className
+        };
+        webcamItems.push(items);
       }
-      carousel.append('<div class="'+className+'"><img src="'+item.CURRENTIMAGEURL+'" alt="'+item.city+' Webcams"></div>')
-    },
-    addCarousel: function(){
-      var carousel = templates.addCarousel;
-      this.camImg.html(carousel);
+      var webcamsTemplate = this.templateWebcams.html();
+      var Template = Handlebars.compile(webcamsTemplate);
+      this.camImg.html("");
+      this.camImg.append(Template(webcamItems));
+      //carousel.append('<div class="'+className+'"><img src="'+item.CURRENTIMAGEURL+'" alt="'+item.city+' Webcams"></div>')
     },
     getForecast: function(){
       $this = this;
@@ -196,21 +216,29 @@ $(function(){
       })
     },
     addForecast: function(forecasts){
+      var forecastItems = [];
       for(i in forecasts){
         var current = forecasts[i];
-        var conditions = current.conditions;
-        var tz = current.date.tz_long;
-        var month = current.date.monthname;
-        var day = current.date.day
-        var year = current.date.year;
-        var high = current.high.fahrenheit;
-        var low = current.low.fahrenheit;
-        var icon = current.icon_url;
-        var windDir = current.avewind.dir;
-        var windMph = current.avewind.mph;
-        var text = current.txt.fcttext;
-        this.forecastInfo.append(templates.addForecast(i,month,day,year,high,low,icon,tz,windDir,windMph,text));
+        var items  = {
+          index: i,
+          conditions: current.conditions,
+          tz: current.date.tz_long,
+          month: current.date.monthname,
+          day: current.date.day,
+          year: current.date.year,
+          high: current.high.fahrenheit,
+          low: current.low.fahrenheit,
+          icon: current.icon_url,
+          wind_dir: current.avewind.dir,
+          wind_mph: current.avewind.mph,
+          text: current.txt.fcttext
+        };
+        forecastItems.push(items);
       }
+      var forecastTemplate = this.templateForecast.html();
+      var Template = Handlebars.compile(forecastTemplate);
+      this.forecastInfo.html("");
+      this.forecastInfo.append(Template(forecastItems));
     },
     buttonToggle: function(oThis){
       this.options.removeClass('bg-primary');
@@ -222,6 +250,19 @@ $(function(){
     },
     hideTables: function(){
       this.tables.css("display", "none");
+    },
+    showTable: function(request){
+      switch(request){
+        case 'forecast':
+          this.showForecast();
+        break;
+        case 'cams':
+          this.showCams();
+        break;
+        case 'info':
+          this.showInfo();
+        break;
+      }
     },
     showSpinner: function(){
       this.spinner.css("display", "block");
@@ -242,17 +283,7 @@ $(function(){
       var link = oThis.find('a');
       var request = link.data('req');
       this.hideTables();
-      switch(request){
-        case 'forecast':
-          this.showForecast();
-        break;
-        case 'cams':
-          this.showCams();
-        break;
-        case 'info':
-          this.showInfo();
-        break;
-      }
+      this.showTable(request);
     }
   };
 

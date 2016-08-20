@@ -204,7 +204,9 @@ p.lng{
 }
 
 .spinner-wrap{
-  position: relative;
+  position: absolute;
+  top: 40%;
+  left: 52%;
   width: 70px;
   margin: 0 auto;
   display: none;
@@ -223,5 +225,15 @@ p.lng{
   }
   .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form{
     border: 0;
+  }
+
+  #forecast tbody tr td, #forecast thead tr td{
+    display: block;
+    width: 100%;
+    border: 0;
+  }
+
+  .carousel-inner > .item > img, .carousel-inner > .item > a > img{
+    height: 200px;
   }
 }
