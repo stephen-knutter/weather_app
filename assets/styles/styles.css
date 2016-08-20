@@ -205,8 +205,11 @@ p.lng{
 
 .spinner-wrap{
   position: absolute;
-  top: 40%;
-  left: 52%;
+  display: inline-block;
+  line-height: 1.5;
+  vertical-align: middle;
+  left: 0;
+  right: 0;
   width: 70px;
   margin: 0 auto;
   display: none;

@@ -205,6 +205,7 @@ $(function(){
         type: 'GET',
         url: url,
         success: function(data){
+          console.log(data);
           var forecast = data.forecast.simpleforecast.forecastday;
           var txt = data.forecast.txt_forecast.forecastday;
           for(var i=0; i<3; i++){
